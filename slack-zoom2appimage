@@ -1,0 +1,97 @@
+#!/bin/bash
+
+# rizitis
+# create a zoom-linux AppImage
+
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# NOTE: You should NOT run AppImage from everyone (like me), only from official creators.
+# This script will download and create an AppImage in a Slackware64-current system. 
+# The reason is that official zoom.us dont provide AppImages for zoom...so far.
+# zoom.us has nothing to do with this script. Use it at your own risk.
+
+cd "$(dirname "$0")" || exit
+CWD=$(pwd)
+echo "$CWD"
+
+# Zoom binary URL
+ZOOM_BINARY_URL="https://cdn.zoom.us/prod/5.16.10.668/zoom_x86_64.pkg.tar.xz"
+ZOOM_BINARY_FILE="zoom_x86_64.pkg.tar.xz"
+PKG="AppDir"
+CWD2="work-space"
+
+rm -r "$CWD2"
+echo "Creating $CWD2"
+sleep 1
+mkdir -p "$CWD2"
+cd "$CWD2" || exit
+
+echo "Downloading Zoom binary"
+sleep 1
+wget "$ZOOM_BINARY_URL" -O "$ZOOM_BINARY_FILE"
+echo "Extracting Zoom binary and removing archive"
+sleep 1
+tar -xvf "$ZOOM_BINARY_FILE"
+rm "$ZOOM_BINARY_FILE"
+
+echo "Creating $PKG"
+sleep 1
+echo "Moving the extracted binary to $PKG"
+mkdir -p "$PKG"
+cd "$PKG" || exit
+cp ../usr/share/applications/*.desktop .
+cp ../usr/share/pixmaps/* .
+mv ../opt .
+mkdir -p usr/lib64
+cp /usr/lib64/libstdc++.so.* usr/lib64/ || exit 1
+cp /usr/lib64/libQt5* usr/lib64/ || exit 1
+
+echo "Creating AppRun script"
+sleep 1
+cat <<EOL > AppRun
+#!/bin/bash
+HERE="\$(dirname "\$(readlink -f "\${0}")")"
+export PATH="\${HERE}/usr/bin/:\${PATH}"
+export LD_LIBRARY_PATH="\${HERE}/opt/zoom/cef:\${HERE}/usr/lib64:\${HERE}/usr/lib64/qt5:\${LD_LIBRARY_PATH}"
+exec "\${HERE}/opt/zoom/ZoomLauncher" "\$@"
+EOL
+
+chmod +x AppRun || exit 2
+cd .. || exit
+
+echo "Downloading AppImageKit"
+sleep 1
+wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+chmod +x appimagetool-x86_64.AppImage
+
+echo "Running AppImageKit to create AppImage"
+sleep 1
+ARCH=x86_64 ./appimagetool-x86_64.AppImage "$PKG"
+
+chmod +x Zoom-x86_64.AppImage
+wait
+clear
+
+echo ""
+echo -e "\033[1mDo you want to run Zoom.AppImage? (yes/no)\033[0m"
+read answer
+
+if [[ "$answer" =~ ^[Yy][Ee][Ss]$ ]]; then
+    echo "Start AppImage..."
+./Zoom-x86_64.AppImage &
+exit
+else
+    echo "Exiting the script."
+    exit 0 
+fi
+
+
