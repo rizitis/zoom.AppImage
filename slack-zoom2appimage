@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # rizitis
-# create a zoom-linux AppImage
+# create a zoom-linux AppImage for Slackware64-current, what else? 
 
 #  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
 #  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -21,42 +21,66 @@
 
 cd "$(dirname "$0")" || exit
 CWD=$(pwd)
-echo "$CWD"
+WORKSPACE_DIR="$CWD/work-space"
+LOG_FILE="$WORKSPACE_DIR/installation.log"
+
+
+ZOOM_VERSION="5.16.10.668"
 
 # Zoom binary URL
-ZOOM_BINARY_URL="https://cdn.zoom.us/prod/5.16.10.668/zoom_x86_64.pkg.tar.xz"
+ZOOM_BINARY_URL="https://cdn.zoom.us/prod/$ZOOM_VERSION/zoom_x86_64.pkg.tar.xz"
 ZOOM_BINARY_FILE="zoom_x86_64.pkg.tar.xz"
 PKG="AppDir"
 CWD2="work-space"
+
 
 rm -r "$CWD2"
 echo "Creating $CWD2"
 sleep 1
 mkdir -p "$CWD2"
-cd "$CWD2" || exit
+
+log() {
+    echo "$(date): $1" >> "$LOG_FILE"
+}
+
+# Error handling
+handle_error() {
+    log "Error: $1"
+    echo "Error: $1"
+    exit 1
+}
+
+# Create log file
+echo "" > "$LOG_FILE"
+log "Change to workspace."
+cd "$CWD2" || exit 1
 
 echo "Downloading Zoom binary"
 sleep 1
-wget "$ZOOM_BINARY_URL" -O "$ZOOM_BINARY_FILE"
+log "Downloading Zoom binary."
+wget "$ZOOM_BINARY_URL" -O "$ZOOM_BINARY_FILE" || handle_error "Failed to download Zoom binary."
 echo "Extracting Zoom binary and removing archive"
 sleep 1
-tar -xvf "$ZOOM_BINARY_FILE"
-rm "$ZOOM_BINARY_FILE"
-
+log "Extracting Zoom binary."
+tar -xvf "$ZOOM_BINARY_FILE" || handle_error "Failed to extract Zoom binary."
+rm "$ZOOM_BINARY_FILE" || handle_error "Failed to remove Zoom binary archive."
+log "Creating AppDir."
 echo "Creating $PKG"
 sleep 1
+mkdir -p "$PKG" || handle_error "Failed to create AppDir."
+cd "$PKG" || exit 1
 echo "Moving the extracted binary to $PKG"
-mkdir -p "$PKG"
-cd "$PKG" || exit
+log "Copying files from Zoom binary."
 cp ../usr/share/applications/*.desktop .
 cp ../usr/share/pixmaps/* .
 mv ../opt .
 mkdir -p usr/lib64
-cp /usr/lib64/libstdc++.so.* usr/lib64/ || exit 1
-cp /usr/lib64/libQt5* usr/lib64/ || exit 1
+cp /usr/lib64/libstdc++.so.* usr/lib64/ || handle_error "Failed to copy libstdc++."
+cp /usr/lib64/libQt5* usr/lib64/ || handle_error "Failed to copy Qt libraries."
 
 echo "Creating AppRun script"
 sleep 1
+log "Creating AppRun script."
 cat <<EOL > AppRun
 #!/bin/bash
 HERE="\$(dirname "\$(readlink -f "\${0}")")"
@@ -65,22 +89,24 @@ export LD_LIBRARY_PATH="\${HERE}/opt/zoom/cef:\${HERE}/usr/lib64:\${HERE}/usr/li
 exec "\${HERE}/opt/zoom/ZoomLauncher" "\$@"
 EOL
 
-chmod +x AppRun || exit 2
-cd .. || exit
+chmod +x AppRun || handle_error "Failed to make AppRun executable."
+cd .. || exit 1
 
 echo "Downloading AppImageKit"
 sleep 1
-wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-chmod +x appimagetool-x86_64.AppImage
+log "Downloading AppImageKit."
+wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" || handle_error "Failed to download AppImageKit."
+chmod +x appimagetool-x86_64.AppImage || handle_error "Failed to make AppImageKit executable."
 
 echo "Running AppImageKit to create AppImage"
 sleep 1
-ARCH=x86_64 ./appimagetool-x86_64.AppImage "$PKG"
-
-chmod +x Zoom-x86_64.AppImage
+log "Running AppImageKit to create AppImage."
+ARCH=x86_64 ./appimagetool-x86_64.AppImage "$PKG" || handle_error "Failed to run AppImageTool."
+log "Make executable Zoom-x86_64.AppImage"
+chmod +x Zoom-x86_64.AppImage || handle_error "Failed to make AppImage executable."
 wait
 clear
-
+log "Question to run AppImage or quit"
 echo ""
 echo -e "\033[1mDo you want to run Zoom.AppImage? (yes/no)\033[0m"
 read answer
@@ -88,10 +114,9 @@ read answer
 if [[ "$answer" =~ ^[Yy][Ee][Ss]$ ]]; then
     echo "Start AppImage..."
 ./Zoom-x86_64.AppImage &
-exit
+exit 
 else
     echo "Exiting the script."
     exit 0 
 fi
-
 
