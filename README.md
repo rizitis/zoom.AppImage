@@ -5,7 +5,7 @@ This script is an unofficial creator of AppImage for https://zoom.us/ since they
 
 
 # NOTE:
-You should NOT run AppImage from everyone (like me), only from official creators.
+You should NOT run AppImage from everyone (like mine), only from official creators.
  This script will download and create an AppImage in a **Slackware64-current** system. 
  The reason is that official zoom.us dont provide AppImages for zoom...so far.
  
