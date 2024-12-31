@@ -6,7 +6,7 @@ This script is an unofficial creator of AppImage for https://zoom.us/ since they
 ---
 ## HowTo
 `bash slack-zoom2appimage`
-Thats all... 
+<br>Thats all... 
 
 ---
 
