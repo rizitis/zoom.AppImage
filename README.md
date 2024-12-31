@@ -3,6 +3,13 @@ Script to create zoom-linux AppImage for Slackware64-current
 
 This script is an unofficial creator of AppImage for https://zoom.us/ since they dont provide one.
 
+---
+## HowTo
+`bash slack-zoom2appimage`
+Thats all... 
+
+---
+
 
 # NOTE:
 You should NOT run AppImage from everyone (like me), only from official creators.
