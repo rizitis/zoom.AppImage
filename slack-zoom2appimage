@@ -25,8 +25,7 @@ WORKSPACE_DIR="$CWD/work-space"
 LOG_FILE="$WORKSPACE_DIR/installation.log"
 
 
-ZOOM_VERSION="5.16.10.668"
-
+ZOOM_VERSION="6.3.1.5673"
 # Zoom binary URL
 ZOOM_BINARY_URL="https://cdn.zoom.us/prod/$ZOOM_VERSION/zoom_x86_64.pkg.tar.xz"
 ZOOM_BINARY_FILE="zoom_x86_64.pkg.tar.xz"
@@ -76,7 +75,7 @@ cp ../usr/share/pixmaps/* .
 mv ../opt .
 mkdir -p usr/lib64
 cp /usr/lib64/libstdc++.so.* usr/lib64/ || handle_error "Failed to copy libstdc++."
-cp /usr/lib64/libQt5* usr/lib64/ || handle_error "Failed to copy Qt libraries."
+cp /usr/lib64/libQt6* usr/lib64/ || handle_error "Failed to copy Qt libraries."
 
 echo "Creating AppRun script"
 sleep 1
@@ -102,8 +101,8 @@ echo "Running AppImageKit to create AppImage"
 sleep 1
 log "Running AppImageKit to create AppImage."
 ARCH=x86_64 ./appimagetool-x86_64.AppImage "$PKG" || handle_error "Failed to run AppImageTool."
-log "Make executable Zoom-x86_64.AppImage"
-chmod +x Zoom-x86_64.AppImage || handle_error "Failed to make AppImage executable."
+log "Make executable Zoom_Workplace-x86_64.AppImage"
+chmod +x Zoom_Workplace-x86_64.AppImage || handle_error "Failed to make AppImage executable."
 wait
 clear
 log "Question to run AppImage or quit"
@@ -113,7 +112,7 @@ read answer
 
 if [[ "$answer" =~ ^[Yy][Ee][Ss]$ ]]; then
     echo "Start AppImage..."
-./Zoom-x86_64.AppImage &
+./Zoom_Workplace-x86_64.AppImage &
 exit 
 else
     echo "Exiting the script."
