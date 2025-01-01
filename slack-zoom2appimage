@@ -84,7 +84,7 @@ cat <<EOL > AppRun
 #!/bin/bash
 HERE="\$(dirname "\$(readlink -f "\${0}")")"
 export PATH="\${HERE}/usr/bin/:\${PATH}"
-export LD_LIBRARY_PATH="\${HERE}/opt/zoom/cef:\${HERE}/usr/lib64:\${HERE}/usr/lib64/qt5:\${LD_LIBRARY_PATH}"
+export LD_LIBRARY_PATH="\${HERE}/opt/zoom/cef:\${HERE}/usr/lib64:\${HERE}/usr/lib64/qt6:\${LD_LIBRARY_PATH}"
 exec "\${HERE}/opt/zoom/ZoomLauncher" "\$@"
 EOL
 
